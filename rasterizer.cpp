@@ -1,10 +1,17 @@
 // rasterizer.cpp
 // Very simple rasterizer for 2D triangles.
+// Currently only renders a single triangle to a character-based framebuffer.
 // The rasterizer logic is taken from Fabien Giesen:
 // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
 
+#include <iostream>
+#include <cstring>
+#include <cassert>
+
 static const int screenWidth = 64;
 static const int screenHeight = 36;
+
+static char frame[screenHeight][screenWidth + 1] = {0};
 
 struct Point2D {
   int x, y;
@@ -32,6 +39,25 @@ int max3(int a, int b, int c) {
   } else {
     return b > c ? b : c;
   }
+}
+
+void clearFrame() {
+  for(int y = 0; y < screenHeight; y++) {
+    memset(frame[y], ' ', sizeof(' ') * screenWidth);
+  }
+}
+
+void displayFrame() {
+  for(int y = 0; y < screenHeight; y++) {
+    std::cout << frame[y] << std::endl;
+  }
+}
+
+void renderPixel(const Point2D& p, float w0, float w1, float w2) {
+  assert(p.y >= 0 && p.y < screenHeight &&
+         p.x >= 0 && p.x < screenWidth);
+
+  frame[p.y][p.x] = '#';
 }
 
 int orient2d(const Point2D& a, const Point2D& b, const Point2D& c) {
@@ -62,12 +88,20 @@ void drawTri(const Point2D& v0, const Point2D& v1, const Point2D& v2) {
 
       // If p is on or inside all edges, render pixel
       if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-        /* renderPixel(p, w0, w1, w2); */
+        renderPixel(p, w0, w1, w2);
       }
     }
   }
 }
 
 int main() {
+  const Point2D a = { 17, 30 };
+  const Point2D b = { 5, 1 };
+  const Point2D c = { 20, 1 };
+
+  clearFrame();
+  drawTri(a, b, c);
+  displayFrame();
+
   return 0;
 }
