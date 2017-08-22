@@ -78,13 +78,14 @@ void drawTri(const Point2D& v0, const Point2D& v1, const Point2D& v2) {
   maxY = max(maxY, screenHeight - 1);
 
   // Rasterize
+  const float triArea = (float)orient2d(v0, v1, v2);
   Point2D p;
   for (p.y = minY; p.y <= maxY; p.y++) {
     for (p.x = minX; p.x <= maxX; p.x++) {
       // Determine barycentric coordinates
-      float w0 = (float)orient2d(v1, v2, p);
-      float w1 = (float)orient2d(v2, v0, p);
-      float w2 = (float)orient2d(v0, v1, p);
+      float w0 = (float)orient2d(v1, v2, p) / triArea;
+      float w1 = (float)orient2d(v2, v0, p) / triArea;
+      float w2 = (float)orient2d(v0, v1, p) / triArea;
 
       // If p is on or inside all edges, render pixel
       if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
