@@ -17,6 +17,16 @@ struct Point2D {
   int x, y;
 };
 
+static const Point2D debugPoint = {-1, -1};
+
+bool pointEq(const Point2D& a, const Point2D& b) {
+  return a.x == b.x && a.y == b.y;
+}
+
+bool isPointDebugging(const Point2D& p) {
+  return pointEq(debugPoint, p);
+}
+
 int min(int a, int b) {
   return a < b ? a : b;
 }
@@ -57,7 +67,11 @@ void renderPixel(const Point2D& p, float w0, float w1, float w2) {
   assert(p.y >= 0 && p.y < screenHeight &&
          p.x >= 0 && p.x < screenWidth);
 
-  frame[p.y][p.x] = '#';
+  if (isPointDebugging(p)) {
+    frame[p.y][p.x] = '*';
+  } else {
+    frame[p.y][p.x] = '#';
+  }
 }
 
 int orient2d(const Point2D& a, const Point2D& b, const Point2D& c) {
@@ -86,6 +100,10 @@ void drawTri(const Point2D& v0, const Point2D& v1, const Point2D& v2) {
       float w0 = (float)orient2d(v1, v2, p) / triArea;
       float w1 = (float)orient2d(v2, v0, p) / triArea;
       float w2 = (float)orient2d(v0, v1, p) / triArea;
+
+      if (isPointDebugging(p)) {
+        std::cout << "(" << p.x << "," << p.y << ") w0 = " << w0 << " w1 = " << w1 << " w2 = " << w2 << std::endl;
+      }
 
       // If p is on or inside all edges, render pixel
       if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
