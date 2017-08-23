@@ -9,6 +9,7 @@
 #include <cassert>
 #include <chrono>
 #include <thread>
+#include <cmath>
 
 using std::chrono::high_resolution_clock;
 using std::chrono::microseconds;
@@ -20,6 +21,9 @@ static const int screenWidth = 64;
 static const int screenHeight = 36;
 
 static char frame[screenHeight][screenWidth + 1] = {0};
+
+static const float rotationRate = 0.333; // Hz
+static const float rotationAngle = M_PI / targetFrameRate * rotationRate;
 
 struct Point2D {
   int x, y;
@@ -127,16 +131,43 @@ void drawTri(const Point2D& v0, const Point2D& v1, const Point2D& v2) {
   }
 }
 
+Point2D triCentroid(const Point2D& a, const Point2D& b, const Point2D& c) {
+  Point2D midpoint = { (int)std::round((a.x + b.x) / 2.f),
+                       (int)std::round((a.y + b.y) / 2.f) };
+
+  Point2D centroid = { c.x + (int)std::round((midpoint.x - c.x) * 2.f / 3.f),
+                       c.y + (int)std::round((midpoint.y - c.y) * 2.f / 3.f) };
+
+  return centroid;
+}
+
+Point2D difference(const Point2D& a, const Point2D& b) {
+  return { a.x - b.x, a.y - b.y };
+}
+
+Point2D rotateAround(const Point2D& center, const Point2D& p, float angle) {
+  const Point2D diff = difference(p, center);
+
+  return { center.x + (int)std::round((float)diff.x * std::cos(angle) - (float)diff.y * std::sin(angle)),
+           center.y + (int)std::round((float)diff.y * std::cos(angle) + (float)diff.x * std::sin(angle)) };
+}
+
 int main() {
   clearFrame();
   displayFrame();
 
-  const Point2D a = { 10, 20 };
-  const Point2D b = { 25,  1 };
-  const Point2D c = { 40, 20 };
+  const Point2D a_start = { 10, 20 };
+  const Point2D b_start = { 25,  1 };
+  const Point2D c_start = { 40, 20 };
+  const Point2D centroid = triCentroid(a_start, b_start, c_start);
 
-  while(true) {
+  int numFrames = 0;
+  while(numFrames++ >= 0) {
     auto frameStart = high_resolution_clock::now();
+
+    const Point2D a = rotateAround(centroid, a_start, numFrames * rotationAngle);
+    const Point2D b = rotateAround(centroid, b_start, numFrames * rotationAngle);
+    const Point2D c = rotateAround(centroid, c_start, numFrames * rotationAngle);
 
     clearFrame();
     drawTri(a, b, c);
