@@ -88,8 +88,8 @@ void drawTri(const Point2D& v0, const Point2D& v1, const Point2D& v2) {
   // Clip against screen bounds
   minX = max(minX, 0);
   minY = max(minY, 0);
-  maxX = max(maxX, screenWidth - 1);
-  maxY = max(maxY, screenHeight - 1);
+  maxX = min(maxX, screenWidth - 1);
+  maxY = min(maxY, screenHeight - 1);
 
   // Rasterize
   const float triArea = (float)orient2d(v0, v1, v2);
