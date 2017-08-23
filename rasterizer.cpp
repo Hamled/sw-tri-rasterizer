@@ -7,6 +7,14 @@
 #include <iostream>
 #include <cstring>
 #include <cassert>
+#include <chrono>
+#include <thread>
+
+using std::chrono::high_resolution_clock;
+using std::chrono::microseconds;
+
+static const float targetFrameRate = 60.f; // Hz
+static const int targetFrameTime = (int)(1.f / targetFrameRate * 1000000.f); // in microseconds
 
 static const int screenWidth = 64;
 static const int screenHeight = 36;
@@ -54,6 +62,12 @@ int max3(int a, int b, int c) {
 void clearFrame() {
   for(int y = 0; y < screenHeight; y++) {
     memset(frame[y], ' ', sizeof(' ') * screenWidth);
+  }
+}
+
+void resetDisplayCursor() {
+  for(int y = 0; y < screenHeight; y++) {
+    std::cout << "\EM";
   }
 }
 
@@ -114,13 +128,24 @@ void drawTri(const Point2D& v0, const Point2D& v1, const Point2D& v2) {
 }
 
 int main() {
-  const Point2D a = { 17, 30 };
-  const Point2D b = { 5, 1 };
-  const Point2D c = { 20, 1 };
-
   clearFrame();
-  drawTri(a, b, c);
   displayFrame();
+
+  const Point2D a = { 10, 20 };
+  const Point2D b = { 25,  1 };
+  const Point2D c = { 40, 20 };
+
+  while(true) {
+    auto frameStart = high_resolution_clock::now();
+
+    clearFrame();
+    drawTri(a, b, c);
+
+    resetDisplayCursor();
+    displayFrame();
+
+    std::this_thread::sleep_until(frameStart + microseconds(targetFrameTime));
+  }
 
   return 0;
 }
